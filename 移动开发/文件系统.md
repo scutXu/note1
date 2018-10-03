@@ -1,0 +1,58 @@
+##IOS
+**AppName.app** 包含app及内置资源，只读，不会被iCloud或iTunes备份
+
+**Documents/** 存储用户相关的数据，会被备份
+
+**Documents/Inbox** 
+
+**Library/** 存储用户无关的数据，会被备份
+
+**tmp/** 存储临时临时数据，不会被备份
+
+##Android
+**asset** 包含app内置资源
+
+**sdcard / external storage** 存储全局可读取文件，外部存储中也包含可对外的app私有存储目录
+
+```
++- /storage/sdcard0     -> Environment.getExternalStorageDirectory()
+    |                       / Environment.getExternalStoragePublicDirectory("")
+    |
+    +- dir1             -> Environment.getExternalStoragePublicDirectory("dir1")
+    |
+    |   ($appDataDir)
+    +- Andorid/data/com.srain.cube.sample
+        |
+        |   ($filesDir)
+        +- files        -> Context.getExternalFilesDir("")
+        |   |
+        |   +- file1    -> Context.getExternalFilesDir("file1")
+        |   +- Music    -> Context.getExternalFilesDir(Environment.Music);
+        |   +- Picture  -> ... Environment.Picture
+        |   +- ...
+        |
+        |   ($cacheDir)
+        +- cache        -> Context.getExternalCacheDir()
+        |
+        +- ???
+```
+
+**internal storage** 存储私有文件，对其他应用和用户不可见
+
+```
++- /data                -> Environment.getDataDirectory()
+|   |
+|   |   ($appDataDir)
+|   +- data/com.srain.cube.sample
+|       |
+|       |   ($filesDir)
+|       +- files            -> Context.getFilesDir() / Context.getFileStreamPath("")
+|       |       |
+|       |       +- file1    -> Context.getFileStreamPath("file1")
+|       |   ($cacheDir)
+|       +- cache            -> Context.getCacheDir()
+|       |
+|       +- app_$name        ->(Context.getDir(String name, int mode)
+|
+|   ($rootDir)
+```

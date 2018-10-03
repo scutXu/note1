@@ -1,0 +1,30 @@
+x86为例
+
+struct X
+{
+    short s; /* 2 bytes */
+             /* 2 padding bytes */
+    int   i; /* 4 bytes */
+    char  c; /* 1 byte */
+             /* 3 padding bytes */
+};
+
+struct Y
+{
+    int   i; /* 4 bytes */
+    char  c; /* 1 byte */
+             /* 1 padding byte */
+    short s; /* 2 bytes */
+};
+
+struct Z
+{
+    int   i; /* 4 bytes */
+    short s; /* 2 bytes */
+    char  c; /* 1 byte */
+             /* 1 padding byte */
+};
+
+规则：
+1）数据类型自身的对齐值：对于char型数据，其自身对齐值为1，对于short型为2，对于int,float,double类型，其自身对齐值为4，单位字节
+2）结构体或者类的自身对齐值：其成员中自身对齐值最大的那个值

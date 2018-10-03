@@ -1,0 +1,20 @@
+Non-blocking BSD socket connections
+
+Situation: You set up a non-blocking socket and do a connect() that returns -1/EINPROGRESS or -1/EWOULDBLOCK. You select() the socket for writability. This returns as soon as the connection succeeds or fails. (Exception: Under some old versions of Ultrix, select() wouldn't notice failure before the 75-second timeout.)
+Question: What do you do after select() returns writability? Did the connection fail? If so, how did it fail?
+
+If the connection failed, the reason is hidden away inside something called so_error in the socket. Modern systems let you see so_error with getsockopt(,,SO_ERROR,,), but this isn't portable---in fact, getsockopt() can crash old systems. A different way to see so_error is through error slippage: any attempt to read or write data on the socket will return -1/so_error.
+
+Sometimes you have data to immediately write to the connection. Then you can just write() the data. If connect() failed, the failure will be reported by write(), usually with the right connect() errno. This is the solution I supplied for IRC in 1990. Unfortunately, on some systems, under some circumstances, write() will substitute EPIPE for the old errno, so you lose information.
+
+Another possibility is read(fd,&ch,0). If connect() succeeded, you get a 0 return value, except under Solaris, where you get -1/EAGAIN. If connect() failed, you should get the right errno through error slippage. Fatal flaw: under Linux, you will always get 0.
+
+Another possibility is read(fd,&ch,1), but this leads to programming difficulties, since a character may in fact have arrived. Everything that reads the socket has to know about your pre-buffered character.
+
+Another possibility is recv(,,,MSG_PEEK). Unfortunately, the recv() code for stream sockets was, historically, completely untested and a massive source of bugs. I'd steer clear of this.
+
+Another possibility is to select() for readability. But this is wrong, because the connect() may have succeeded and data may have arrived before you had time to do a select().
+
+Another possibility is getpeername(). If the socket is connected, getpeername() will return 0. If the socket is not connected, getpeername() will return ENOTCONN, and read(fd,&ch,1) will produce the right errno through error slippage. This is a combination of suggestions from Douglas C. Schmidt and Ken Keys.
+
+Another possibility is a second connect(). This seems to be a strictly worse solution than getpeername(): it doubles network traffic if the connection failed (with some TCP stacks), and doesn't improve reliability. Ken Keys mentions that this works with SOCKS.

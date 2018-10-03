@@ -1,6 +1,8 @@
 {
 	"plugins": [
-		"expandable-chapters-small"
+		"expandable-chapters-small",
+		"ace",
+		"katex"
 
 	],
 

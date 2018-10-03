@@ -1,0 +1,5 @@
+setState的行为并非overwrite，而是merge。相当于调用Object.assign
+
+setState不会立即执行，而是缓存到队列中，由react native异步地批量执行
+
+由于前一点提到的特性，当next state的值依赖于previous state时，可以传入一个function，而非object，来更新state
