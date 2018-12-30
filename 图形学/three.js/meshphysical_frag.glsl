@@ -35,35 +35,78 @@ varying vec3 vNormal;
 #include <dithering_pars_fragment>
 #include <color_pars_fragment> //varying vec3 vColor;
 #include <uv_pars_fragment> //varying vec2 vUv;
-#include <uv2_pars_fragment> //varying vec2 vUv2;
+
+#include <uv2_pars_fragment> //#if defined( USE_LIGHTMAP ) || defined( USE_AOMAP )
+							 //    varying vec2 vUv2;
+							 //#endif
+
 #include <map_pars_fragment> //uniform sampler2D map;
 #include <alphamap_pars_fragment> //uniform sampler2D alphaMap;
-#include <aomap_pars_fragment> //uniform sampler2D aoMap;uniform float aoMapIntensity;
-#include <lightmap_pars_fragment> //uniform sampler2D lightMap;uniform float lightMapIntensity;
+
+#include <aomap_pars_fragment> //uniform sampler2D aoMap;
+							   //uniform float aoMapIntensity;
+
+#include <lightmap_pars_fragment> //uniform sampler2D lightMap;
+								  //uniform float lightMapIntensity;
+
 #include <emissivemap_pars_fragment> //uniform sampler2D emissiveMap;
-#include <envmap_pars_fragment>
+
+#include <envmap_pars_fragment> //uniform float reflectivity;
+								//uniform float envMapIntensity;
+								//#ifdef ENVMAP_TYPE_CUBE
+								// 	 uniform samplerCube envMap;
+								//#else
+								//	 uniform sampler2D envMap;
+								//endif
+								//uniform float flipEnvMap;
+								//uniform int maxMipLevel;
+								//#if defined( USE_BUMPMAP ) || defined( USE_NORMALMAP )
+								//	 uniform float refractionRatio;
+								//#else
+								//	 varying vec3 vReflect;
+								//#endif
 #include <fog_pars_fragment>
 #include <bsdfs>
 #include <cube_uv_reflection_fragment> //#ifdef ENVMAP_TYPE_CUBE_UV
+									   //	#define cubeUV_textureSize (1024.0)
 									   //	vec4 textureCubeUV(vec3 reflectedDirection,float roughness);
 									   //#endif
 
-#include <lights_pars_begin> //AmbientLight: vec3 -> vec3
-							 //DirectionalLight: DirectionalLight -> IncidentLight
-							 //Point Light: PointLight -> IncidentLight
-							 //SpotLight: SpotLight -> IncidentLight
-							 //RectAreaLight: RectAreaLight -> RectAreaLight
-							 //HemisphereLight: HemisphereLight -> vec3
+#include <lights_pars_begin> //getAmbientLightIrradiance(vec3):vec3
+							 //getDirectionalDirectLightIrradiance(DirectionalLight):IncidentLight
+							 //getPointDirectLightIrradiance(PointLight):(IncidentLight)
+							 //getSpotDirectLightIrradiance(SpotLight):(IncidentLight)
+							 //(RectAreaLight):RectAreaLight
+							 //getHemisphereLightIrradiance(HemisphereLight):vec3 
 
-#include <lights_pars_maps> //ENVMAP: map -> vec3
+#include <lights_pars_maps> //getLightProbeIndirectIrradiance():vec3
+							//getLightProbeIndirectRadiance():vec3
 
-#include <lights_physical_pars_fragment> //RE_Direct: BRDF_Specular_GGX, BRDF_Diffuse_Lambert
+#include <lights_physical_pars_fragment> //struct PhysicalMaterial {
+										 // 	vec3	diffuseColor;
+										 // 	float	specularRoughness;
+										 // 	vec3	specularColor;
+										 // 	#ifndef STANDARD
+										 // 		float clearCoat;
+										 //	    	float clearCoatRoughness;
+										 //	    #endif
+										 //};
+										 //RE_Direct: BRDF_Specular_GGX, BRDF_Diffuse_Lambert
 										 //RE_Direct_RectArea: 
 										 //RE_IndirectDiffuse: BRDF_Diffuse_Lambert
 										 //RE_IndirectSpecular: BRDF_Specular_GGX_Environment
-#include <shadowmap_pars_fragment>
-#include <bumpmap_pars_fragment>
-#include <normalmap_pars_fragment>
+										 
+#include <shadowmap_pars_fragment>	//uniform sampler2D **ShadowMap[ NUM_**_LIGHTS ];
+									//varying vec4 v**ShadowCoord[ NUM_**_LIGHTS ];
+									//getShadow():float
+									//getPointShadow():float
+
+#include <bumpmap_pars_fragment> //uniform sampler2D bumpMap;
+								 //uniform float bumpScale;
+
+#include <normalmap_pars_fragment> //uniform sampler2D normalMap;
+								   //uniform vec2 normalScale;
+
 #include <roughnessmap_pars_fragment> //uniform sampler2D roughnessMap;
 #include <metalnessmap_pars_fragment> //uniform sampler2D metalnessMap;
 #include <logdepthbuf_pars_fragment>
@@ -107,6 +150,15 @@ void main() {
 									//totalEmissiveRadiance *= emissiveColor.rgb;
 
 	#include <lights_physical_fragment> //PhysicalMaterial material;
+										//material.diffuseColor = diffuseColor.rgb * ( 1.0 - metalnessFactor );
+										//material.specularRoughness = clamp( roughnessFactor, 0.04, 1.0 );
+										//#ifdef STANDARD
+										//	 material.specularColor = mix( vec3( DEFAULT_SPECULAR_COEFFICIENT ), diffuseColor.rgb, metalnessFactor );
+										//#else
+										//	 material.specularColor = mix( vec3( MAXIMUM_SPECULAR_COEFFICIENT * pow2( reflectivity ) ), diffuseColor.rgb, metalnessFactor );
+										//	 material.clearCoat = saturate( clearCoat ); // Burley clearcoat model
+										//	 material.clearCoatRoughness = clamp( clearCoatRoughness, 0.04, 1.0 );
+										//#endif
 
 	#include <lights_fragment_begin> //directSpecular, directDiffuse := RE_Direct(PointLight)
 									 //directSpecular, directDiffuse += RE_Direct(SpotLight)
@@ -115,8 +167,8 @@ void main() {
 									 //irradiance := AmbientLight + HemisphereLight
 									 //radiance := 0
 
-	#include <lights_fragment_maps> //irradiance += LIGHTMAP + ENVMAP
-									//radiance += ENVMAP
+	#include <lights_fragment_maps> //irradiance += LIGHTMAP + ENVMAP_diffuse
+									//radiance += ENVMAP_specular
 
 	#include <lights_fragment_end> //indirectDiffuse := RE_IndirectDiffuse(irradiance)
 								   //indirectSpecular := RE_IndirectSpecular(radiance)

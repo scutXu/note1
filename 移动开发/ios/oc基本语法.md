@@ -12,9 +12,11 @@ interface代表类的声明。
 + (void)staticFunc;
 @end
 ```
+
 implement代表类的实现
 
 ```
+
 ```
 
 oc函数语法
@@ -48,7 +50,7 @@ oc的协议才是通常意义上的接口
 @end
 ```
 
-使用property定义成员变量的好处是能够自动生成getter和setter方法，并且可以通过设置property的特性来控制getter和setter的行为
+使用property定义成员变量的好处是能够自动生成getter和setter方法，并且可以通过设置property的特性来控制getter和setter的行为。使用object.value = 5对属性赋值时，会隐式调用setter函数
 
 ```
 @interface MyClass : NSObject

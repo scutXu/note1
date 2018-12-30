@@ -5,7 +5,7 @@ $ npm install -g gitbook-cli
 $ gitbook -V
 ```
 
-新建书籍（手动创建的gitbook关联git比较麻烦，用GitBookEditor创建并关联，能自动生成.gitignore）
+新建书籍
 
 ```
 $ gitbook init

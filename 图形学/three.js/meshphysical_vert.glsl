@@ -68,17 +68,34 @@ varying vec3 vViewPosition;
 
 #include <color_pars_vertex> //varying vec3 vColor;
 #include <fog_pars_vertex> //varying float fogDepth;
-#include <morphtarget_pars_vertex> 
+
+#include <morphtarget_pars_vertex>  //#ifndef USE_MORPHNORMALS
+									//    uniform float morphTargetInfluences[ 8 ];
+									//#else
+									//    uniform float morphTargetInfluences[ 4 ];
+									//#endif
 
 #include <skinning_pars_vertex> //uniform mat4 bindMatrix;
 								//uniform mat4 bindMatrixInverse;
 								//#ifdef BONE_TEXTURE
-								//			uniform sampler2D boneTexture;
-								//			uniform int boneTextureSize;
+								//		uniform sampler2D boneTexture;
+								//		uniform int boneTextureSize;
 								//#else
 								//			uniform mat4 boneMatrices[ MAX_BONES ];
 								//mat4 getBoneMatrix( const in float i );
-#include <shadowmap_pars_vertex>
+
+#include <shadowmap_pars_vertex> //#if NUM_DIR_LIGHTS > 0
+								 //    uniform mat4 directionalShadowMatrix[ NUM_DIR_LIGHTS ];
+								 //    varying vec4 vDirectionalShadowCoord[ NUM_DIR_LIGHTS ];
+								 //#endif
+								 //#if NUM_SPOT_LIGHTS > 0
+								 //    uniform mat4 spotShadowMatrix[ NUM_SPOT_LIGHTS ];
+								 //    varying vec4 vSpotShadowCoord[ NUM_SPOT_LIGHTS ];
+								 //#endif
+								 //#if NUM_POINT_LIGHTS > 0
+								 //    uniform mat4 pointShadowMatrix[ NUM_POINT_LIGHTS ];
+								 //    varying vec4 vPointShadowCoord[ NUM_POINT_LIGHTS ];
+								 //#endif
 #include <logdepthbuf_pars_vertex>
 #include <clipping_planes_pars_vertex>
 
@@ -89,7 +106,11 @@ void main() {
 	#include <color_vertex> //vColor.xyz = color.xyz;
 
 	#include <beginnormal_vertex> //vec3 objectNormal = vec3( normal );
-	#include <morphnormal_vertex>
+	
+	#include <morphnormal_vertex> //objectNormal += ( morphNormal0 - normal ) * morphTargetInfluences[ 0 ];
+								  //objectNormal += ( morphNormal1 - normal ) * morphTargetInfluences[ 1 ];
+								  //objectNormal += ( morphNormal2 - normal ) * morphTargetInfluences[ 2 ];
+								  //objectNormal += ( morphNormal3 - normal ) * morphTargetInfluences[ 3 ];
 
 	#include <skinbase_vertex> //mat4 boneMatX = getBoneMatrix( skinIndex.x );
 							   //mat4 boneMatY = getBoneMatrix( skinIndex.y );
@@ -109,7 +130,17 @@ void main() {
 
 
 	#include <begin_vertex> //vec3 transformed = vec3( position );
-	#include <morphtarget_vertex>
+
+	#include <morphtarget_vertex> //transformed += ( morphTarget0 - position ) * morphTargetInfluences[ 0 ];
+								  //transformed += ( morphTarget1 - position ) * morphTargetInfluences[ 1 ];
+								  //transformed += ( morphTarget2 - position ) * morphTargetInfluences[ 2 ];
+								  //transformed += ( morphTarget3 - position ) * morphTargetInfluences[ 3 ];
+								  //#ifndef USE_MORPHNORMALS
+								  //    transformed += ( morphTarget4 - position ) * morphTargetInfluences[ 4 ];
+								  //	transformed += ( morphTarget5 - position ) * morphTargetInfluences[ 5 ];
+								  //	transformed += ( morphTarget6 - position ) * morphTargetInfluences[ 6 ];
+								  //	transformed += ( morphTarget7 - position ) * morphTargetInfluences[ 7 ];
+								  //#endif
 
 	#include <skinning_vertex> //vec4 skinVertex = bindMatrix * vec4( transformed, 1.0 );
 							   //vec4 skinned = vec4( 0.0 );
@@ -130,7 +161,19 @@ void main() {
 	vViewPosition = - mvPosition.xyz;
 
 	#include <worldpos_vertex> //vec4 worldPosition = modelMatrix * vec4( transformed, 1.0 );
-	#include <shadowmap_vertex>
+	
+	#include <shadowmap_vertex> //#if NUM_DIR_LIGHTS > 0
+								//    uniform mat4 directionalShadowMatrix[ NUM_DIR_LIGHTS ];
+								//    varying vec4 vDirectionalShadowCoord[ NUM_DIR_LIGHTS ];
+								//#endif
+								//#if NUM_SPOT_LIGHTS > 0
+								//	  uniform mat4 spotShadowMatrix[ NUM_SPOT_LIGHTS ];
+								//	  varying vec4 vSpotShadowCoord[ NUM_SPOT_LIGHTS ];
+								//#endif
+								//#if NUM_POINT_LIGHTS > 0
+								//	  uniform mat4 pointShadowMatrix[ NUM_POINT_LIGHTS ];
+								//	  varying vec4 vPointShadowCoord[ NUM_POINT_LIGHTS ];
+								//#endif
 	#include <fog_vertex>
 
 }

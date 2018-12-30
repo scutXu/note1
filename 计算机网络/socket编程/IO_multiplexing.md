@@ -1,9 +1,3 @@
-#概述
-###select
-###pselect
-###poll
-###epoll
-###kqueue
 #select##
 
 ```
@@ -220,4 +214,4 @@ for (;;) {
 }
 ```
 
-
+#kqueue
